@@ -2,6 +2,8 @@
 #define GLVISUAL_H
 
 #include <QGLWidget>
+#include "primitives.h"
+
 
 class glvisual : public QGLWidget
 {

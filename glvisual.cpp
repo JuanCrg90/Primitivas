@@ -51,9 +51,6 @@ void glvisual::paintGL()
 
 void glvisual::draw()
 {
-    glBegin(GL_LINES);
-    glVertex2d(0,100);
-    glVertex2d(100,100);
-    glEnd();
+
 
 }
