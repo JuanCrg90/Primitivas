@@ -8,75 +8,47 @@
 #  include <GL/gl.h>
 #  include <GL/glu.h>
 #endif
-#include <math.h>
+#include <cmath>
+#include<vector>
+
+
+using namespace std;
+
 
 
 class primitives
 {
 public:
     primitives();
+    static double filter(int distance);
+    static void intensifyPixel(int x,int y,double distance);
 };
 
 
 
 //Clase Punto
-class point
+class point2D
 {
+
+private:
+    int x,y;
 public:
-    float x,y;
-    void drawPixel2D(int x,int y); //Dibuja Pixel en 2 dimensiones
 
+    //Constructores
+    point2D();
+    point2D(int x,int y);
 
+    //Sets y Gets
+    void setpoint(int x,int y);
+    void setX(int x);
+    void setY(int y);
+    int getx();
+    int gety();
+    void draw();
 
 protected:
-    double filter(int distance);
-    void intensifyPixel(int x,int y,double distance);
-
-};
-
-//Clase Linea
-class line:point
-{
-private:
-    point p1,p2; //vertice inicial y final
-public:
-    void DrawLine(int x0, int y0,int x1,int y1); //Algoritmo Incremental
-    void DrawLineFill(int x0, int y0,int x1,int y1,int t);
-    void DrawLineFill2(int x0, int y0, int x1, int y1, int t);
-
-
-    void midPointLine(int x0,int y0, int x1, int y1); //Algoritmo de punto medio
-    void midPointLineAntialiasing(int x0,int y0, int x1, int y1); //antialiasing
-
-
-private:
-    void thick1(int x,int y,float m,int t);
-    void boundaryFill(int x,int y,int t);//coordenadas de la recta,pendiente,grosor
-};
-
-
-
-class ellipse:point
-{
-private:
-    void EllipsePoints(int x, int y); //Puntos que conforman la elipse
-public:
-    void midPointEllipse(int a, int b); //Algoritmo del punto medio
-};
-
-
-class circle:point
-{
-private:
-    void circlePoints(int x,int y); //puntos que conforman el circulo
-public:
-
-    void midPointCircle(int radius); //Algoritmo de punto medio
-    void secondOCircle(int radius); //Algoritmo de Segundo Orden
-
 
 
 };
-
 
 #endif // PRIMITIVES_H
