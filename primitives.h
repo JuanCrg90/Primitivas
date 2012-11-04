@@ -77,7 +77,7 @@ public:
     void setThick(int t);
 
     //Primitivas pintado
-    void drawLine(); //Algoritmo incremental
+    void drawLine(); //Algoritmo incremental (incluye Fill2
     void midPointLine(); //Algoritmo de punto medio
 
     //Antialiasing
@@ -86,6 +86,9 @@ public:
 
     //grosor (Fill)
     void Fill();
+    void Fill2();
+
+
 
 
 

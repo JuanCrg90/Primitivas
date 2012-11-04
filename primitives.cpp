@@ -81,7 +81,7 @@ line::line()
 {
     v1.setpoint(0,0);
     v2.setpoint(0,0);
-    t=0;
+    t=1;
 }
 
 line::line(point2D v1, point2D v2)
@@ -146,28 +146,29 @@ void line::thick1(int x, int y, float m, int t)
 {
     int i=0;
 
-        glBegin(GL_POINTS);
-        if(m>-1.0 && m<1.0)
+    glBegin(GL_POINTS);
+    if(m>-1.0 && m<1.0)
+    {
+        if(t>1)
         {
-            if(t>1)
-            {
-                for(i=-t/2;i<t/2;i++)
-                    glVertex2i(x,y+i);
-            }
-            else
-                glVertex2i(x,y);
+            for(i=-t/2;i<t/2;i++)
+                glVertex2i(x,y+i);
         }
         else
+            glVertex2i(x,y);
+    }
+    else
+    {
+        if(t>1)
         {
-            if(t>1)
-            {
-                for(i=-t/2;i<t/2;i++)
-                    glVertex2i(x+i,y);
-            }
-            else
+            for(i=-t/2;i<t/2;i++)
                 glVertex2i(x+i,y);
-
         }
+        else
+            glVertex2i(x+i,y);
+
+    }
+    glEnd();
 
 }
 
@@ -176,6 +177,10 @@ void line::boundaryFill(int x, int y, int t)
 {
     int i,j;
 
+    if(t==1)
+        drawPixel2D(x,y);
+    else
+    {
         for(i=-t/2;i<t/2;i++)
         {
             for(j=-t/2;j<t/2;j++)
@@ -183,6 +188,10 @@ void line::boundaryFill(int x, int y, int t)
                 drawPixel2D(x+i,y+j);
             }
         }
+    }
+
+
+
 }
 
 
@@ -213,7 +222,7 @@ void line::drawLine()
             {
                 for(x=x0;x<x1;x+=1)
                 {
-                    drawPixel2D(x,floor(y+0.5));
+                    boundaryFill(x,floor(y+0.5),t);
                     y+=m;
                 }
             }
@@ -221,7 +230,7 @@ void line::drawLine()
             {
                 for(x=x0;x>x1;x--)
                 {
-                    drawPixel2D(x,floor(y+0.5));
+                    boundaryFill(x,floor(y+0.5),t);
                     y-=m;
                 }
             }
@@ -234,7 +243,7 @@ void line::drawLine()
             {
                 for(y=y0;y<y1;y++)
                 {
-                    drawPixel2D(x,floor(y+0.5));
+                    boundaryFill(x,floor(y+0.5),t);
                     y++;
                 }
             }
@@ -242,7 +251,7 @@ void line::drawLine()
             {
                 for(y=y0;y>y1;y--)
                 {
-                    drawPixel2D(x,floor(y+0.5));
+                    boundaryFill(x,floor(y+0.5),t);
                     y--;
                 }
             }
@@ -259,7 +268,7 @@ void line::drawLine()
             {
                 for(y=y0;y<y1;y++)
                 {
-                    drawPixel2D(floor(x+0.5),y);
+                    boundaryFill(floor(x+0.5),y,t);
                     x+=(float)(1.0/m);
                 }
             }
@@ -267,7 +276,7 @@ void line::drawLine()
             {
                 for(y=y0;y>y1;y--)
                 {
-                    drawPixel2D(floor(x+0.5),y);
+                    boundaryFill(floor(x+0.5),y,t);
                     x-=(float)(1.0/m);
                 }
             }
@@ -279,14 +288,13 @@ void line::drawLine()
 
             for(y=y0;y<y1;y++)
             {
-                drawPixel2D(round(x+0.5),y);
+                boundaryFill(floor(x+0.5),y,t);
                 y++;
 
             }
         }
 
     }
-
 }
 
 void line::midPointLine()
@@ -477,6 +485,107 @@ void line::Fill()
 
     }
 
+
+}
+
+void line::Fill2()
+{
+    int x0=v1.getx();
+    int x1=v2.getx();
+
+    int y0=v1.gety();
+    int y1=v2.gety();
+
+
+    double dx=x1-x0;
+    double dy=y1-y0;
+
+    double m= dy/dx;
+    float y=y0;
+    float x;
+
+    if(m<=1)
+    {
+        if(dx!=0)
+        {
+
+            if(x1>=x0)
+            {
+                for(x=x0;x<x1;x+=1)
+                {
+                    boundaryFill(x,floor(y+0.5),t);
+                    y+=m;
+                }
+            }
+            else
+            {
+                for(x=x0;x>x1;x--)
+                {
+                    boundaryFill(x,floor(y+0.5),t);
+                    y-=m;
+                }
+            }
+
+        }
+        else
+        {
+            x=x0;
+            if(y1>=y0)
+            {
+                for(y=y0;y<y1;y++)
+                {
+                    boundaryFill(x,floor(y+0.5),t);
+                    y++;
+                }
+            }
+            else
+            {
+                for(y=y0;y>y1;y--)
+                {
+                    boundaryFill(x,floor(y+0.5),t);
+                    y--;
+                }
+            }
+
+        }
+
+    }
+    else //m>1
+    {
+        if(dx!=0)
+        {
+            x=x0;
+            if(y1>=y0)
+            {
+                for(y=y0;y<y1;y++)
+                {
+                    boundaryFill(floor(x+0.5),y,t);
+                    x+=(float)(1.0/m);
+                }
+            }
+            else
+            {
+                for(y=y0;y>y1;y--)
+                {
+                    boundaryFill(floor(x+0.5),y,t);
+                    x-=(float)(1.0/m);
+                }
+            }
+
+        }
+        else
+        {
+            x=x0;
+
+            for(y=y0;y<y1;y++)
+            {
+                boundaryFill(floor(x+0.5),y,t);
+                y++;
+
+            }
+        }
+
+    }
 
 }
 

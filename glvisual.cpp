@@ -55,12 +55,12 @@ void glvisual::draw()
 
     line l;
     l.setV1(100,100);
-    l.setV2(300,200);
+    l.setV2(-100,-200);
 
     glColor3f(1.0,0.0,0.0);
     l.setThick(10);
-    //l.drawLine();
-    l.Fill();
+    l.drawLine();
+    //l.Fill2();
 
 
 
