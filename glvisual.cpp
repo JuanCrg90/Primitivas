@@ -54,15 +54,30 @@ void glvisual::draw()
 
 
     line l;
+    Circle c;
+    Ellipse e;
     l.setV1(100,100);
     l.setV2(-100,-200);
 
     glColor3f(1.0,0.0,0.0);
     l.setThick(10);
     l.drawLine();
-    //l.Fill2();
+
+    c.setRadius(50);
+    glPushMatrix();
+    glTranslatef(100,100,0);
+
+    c.midPointCircle();
+    glPopMatrix();
 
 
+    glPushMatrix();
+    glTranslatef(300,300,0);
+    e.setAB(50,100);
+    e.midPointEllipse();
+    glColor3f(0,1,0);
+    e.fill();
+    glPopMatrix();
 
 
 

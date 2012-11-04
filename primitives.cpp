@@ -141,6 +141,38 @@ void line::setThick(int t)
 }
 
 
+int line::getXv1()
+{
+    return v1.getx();
+}
+
+int line::getYv1()
+{
+    return v1.gety();
+}
+
+int line::getXv2()
+{
+    return v2.getx();
+}
+
+int line::getYv2()
+{
+    return v2.gety();
+}
+
+point2D line::getV1()
+{
+    return v1;
+}
+
+point2D line::getv2()
+{
+    return v2;
+}
+
+
+
 
 void line::thick1(int x, int y, float m, int t)
 {
@@ -296,6 +328,100 @@ void line::drawLine()
 
     }
 }
+
+void line::drawLine(int x0, int y0, int x1, int y1)
+{
+    double dx=x1-x0;
+    double dy=y1-y0;
+
+    double m= dy/dx;
+    float y=y0;
+    float x;
+
+    if(m<=1)
+    {
+        if(dx!=0)
+        {
+
+            if(x1>=x0)
+            {
+                for(x=x0;x<x1;x+=1)
+                {
+                    boundaryFill(x,floor(y+0.5),t);
+                    y+=m;
+                }
+            }
+            else
+            {
+                for(x=x0;x>x1;x--)
+                {
+                    boundaryFill(x,floor(y+0.5),t);
+                    y-=m;
+                }
+            }
+
+        }
+        else
+        {
+            x=x0;
+            if(y1>=y0)
+            {
+                for(y=y0;y<y1;y++)
+                {
+                    boundaryFill(x,floor(y+0.5),t);
+                    y++;
+                }
+            }
+            else
+            {
+                for(y=y0;y>y1;y--)
+                {
+                    boundaryFill(x,floor(y+0.5),t);
+                    y--;
+                }
+            }
+
+        }
+
+    }
+    else //m>1
+    {
+        if(dx!=0)
+        {
+            x=x0;
+            if(y1>=y0)
+            {
+                for(y=y0;y<y1;y++)
+                {
+                    boundaryFill(floor(x+0.5),y,t);
+                    x+=(float)(1.0/m);
+                }
+            }
+            else
+            {
+                for(y=y0;y>y1;y--)
+                {
+                    boundaryFill(floor(x+0.5),y,t);
+                    x-=(float)(1.0/m);
+                }
+            }
+
+        }
+        else
+        {
+            x=x0;
+
+            for(y=y0;y<y1;y++)
+            {
+                boundaryFill(floor(x+0.5),y,t);
+                y++;
+
+            }
+        }
+
+    }
+}
+
 
 void line::midPointLine()
 {
@@ -586,26 +712,229 @@ void line::Fill2()
         }
 
     }
+}
 
+Circle::Circle()
+{
+    radius=1;
+}
+
+Circle::Circle(int r)
+{
+    this ->radius=r;
+}
+
+void Circle::setRadius(int r)
+{
+    this ->radius=r;
+}
+
+int Circle::getRadius()
+{
+    return radius;
+}
+
+
+void Circle::circlePoints(int x, int y)
+{
+    drawPixel2D(x,y);
+    drawPixel2D(y,x);
+    drawPixel2D(y,-x);
+    drawPixel2D(x,-y);
+    drawPixel2D(-x,-y);
+    drawPixel2D(-y,-x);
+    drawPixel2D(-y,x);
+    drawPixel2D(-x,y);
+}
+
+void Circle::midPointCircle()
+{
+    int x=0;
+    int y=radius;
+    double d=5.0/4.0-radius;
+
+    circlePoints(x,y);
+
+    while(y>x)
+    {
+        if(d<0) //seleccionar E
+            d+=2.0*x+3.0;
+        else //seleccionar SE
+        {
+            d+=2.0*(x-y)+5.0;
+            y--;
+        }
+        circlePoints(x,y);
+        x++;
+    }
+
+}
+
+void Circle::secondOCircle()
+{
+    int x=0;
+    int y=radius;
+    double d=1.0-radius;
+    int de=3;
+    int dse=-2*radius+5;
+
+    circlePoints(x,y);
+    while(y>x)
+    {
+        if(d<0) //seleccionar E
+        {
+            d+=de;
+            de+=2;
+            dse+=2;
+        }
+        else //seleccionar SE
+        {
+            d+=dse;
+            de+=2;
+            dse+=4;
+            y--;
+        }
+        x++;
+        circlePoints(x,y);
+    }
+}
+
+void Ellipse::EllipsePoints(int x, int y)
+{
+    drawPixel2D(x,y);
+    drawPixel2D(-x,y);
+    drawPixel2D(-x,-y);
+    drawPixel2D(x,-y);
+}
+
+Ellipse::Ellipse()
+{
+    this->a=0;
+    this->b=0;
+}
+
+Ellipse::Ellipse(int a, int b)
+{
+    this->a=a;
+    this->b=b;
+}
+
+void Ellipse::setAB(int a, int b)
+{
+    this->a=a;
+    this->b=b;
+}
+
+void Ellipse::setA(int a)
+{
+    this->a=a;
+}
+
+void Ellipse::setB(int b)
+{
+    this->b=b;
+}
+
+int Ellipse::getA()
+{
+    return a;
+}
+
+int Ellipse::getB()
+{
+    return b;
+}
+
+void Ellipse::midPointEllipse()
+{
+    double d2;
+    int x=0;
+    int y=b;
+    double d1=(b*b*(x+1)*(x+1)) + (a*a*(y-1/2)*(y-1/2))-a*a*b*b;
+
+    EllipsePoints(x,y);
+    //Gradiente de la region 1
+    while(a*a*(y-0.5)>b*b*(x+1))
+    {
+        if(d1<0) //E
+        {
+            d1+=b*b*(2*x+3);
+        }
+        else
+        {
+            d1+=b*b*(2*x+3)+a*a*(-2*y+2);
+            y--;
+        }
+        x++;
+        EllipsePoints(x,y);
+    }
+    //Region 2
+    d2=b*b + a*a*(-b+0.25);
+
+    while(y>0)
+    {
+        if(d2<0) //SE
+        {
+            d2+=b*b*(2*x+4)+a*a*(-2*y+3);
+            x++;
+        }
+        else //S
+        {
+            d2+=a*a*(-2*y+3);
+        }
+        y--;
+        EllipsePoints(x,y);
+    }
 }
 
 
 
 
+void Ellipse::fill()
+{
+    double d2;
+    int x=0;
+    int y=b;
+    double d1=(b*b*(x+1)*(x+1)) + (a*a*(y-1/2)*(y-1/2))-a*a*b*b;
 
+    drawLine(-x,y,x,y);
+    drawLine(-x,-y,x,-y);
+    //Gradiente de la region 1
+    while(a*a*(y-0.5)>b*b*(x+1))
+    {
+        if(d1<0) //E
+        {
+            d1+=b*b*(2*x+3);
+        }
+        else
+        {
+            d1+=b*b*(2*x+3)+a*a*(-2*y+2);
+            y--;
+        }
+        x++;
+        drawLine(-x,y,x,y);
+        drawLine(-x,-y,x,-y);
+    }
+    //Region 2
+    d2=b*b + a*a*(-b+0.25);
 
+    while(y>0)
+    {
+        if(d2<0) //SE
+        {
+            d2+=b*b*(2*x+4)+a*a*(-2*y+3);
+            x++;
+        }
+        else //S
+        {
+            d2+=a*a*(-2*y+3);
+        }
+        y--;
+        drawLine(-x,y,x,y);
+        drawLine(-x,-y,x,-y);
+    }
 
-
-
-
-
-
-
-
-
-
-
-
+}
 
 
 

@@ -76,25 +76,79 @@ public:
 
     void setThick(int t);
 
+    int getXv1();
+    int getYv1();
+
+    int getXv2();
+    int getYv2();
+
+    point2D getV1();
+    point2D getv2();
+
+
+
     //Primitivas pintado
-    void drawLine(); //Algoritmo incremental (incluye Fill2
+    void drawLine(); //Algoritmo incremental (incluye Fill2)
     void midPointLine(); //Algoritmo de punto medio
 
     //Antialiasing
     void midPointLineAntialiasing(); //Linea con antialiasing usando algoritmo de punto medio
 
-
     //grosor (Fill)
     void Fill();
     void Fill2();
+protected:
+    void drawLine(int x0,int y0,int x1,int y1); //Algoritmo incremental (incluye Fill2)
 
+};
 
+class Circle:public point2D
+{
+private:
+    int radius;
+    void circlePoints(int x,int y); //puntos que conforman el circulo
+public:
+    //Constructores
+    Circle();
+    Circle(int r);
+    //sets y gets
+    void setRadius(int r);
+    int getRadius();
 
+    //Primitivas de pintado
+    void midPointCircle(); //Algoritmo de punto medio
+    void secondOCircle(); //Algoritmo de Segundo Orden
+};
 
+class Ellipse:public line
+{
+private:
+    int a,b;
 
+    void EllipsePoints(int x, int y);
+public:
+    //Constructores
+    Ellipse();
+    Ellipse(int a,int b);
+
+    //sets y gets
+    void setAB(int a,int b);
+    void setA(int a);
+    void setB(int b);
+
+    int getA();
+    int getB();
+
+    //Primitivas de pintado
+    void midPointEllipse();
+
+    //Rellenado
+    void fill();
 
 
 };
+
+
 
 
 #endif // PRIMITIVES_H
