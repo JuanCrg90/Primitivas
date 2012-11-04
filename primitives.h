@@ -45,10 +45,25 @@ public:
     int getx();
     int gety();
     void draw();
+    static void drawPixel2D(int x, int y);
+};
 
-protected:
+
+//Clase Linea
+class line:public point2D
+{
+private:
+    point2D v1,v2; //punto de inicio, punto final
+public:
+    //Constructores
+    line();
+    line(point2D v1,point2D v2);
+    line(int x1,int y1, int x2,int y2);
+    void drawLine(); //Algoritmo incremental
+
 
 
 };
+
 
 #endif // PRIMITIVES_H
