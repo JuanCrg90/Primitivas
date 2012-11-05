@@ -72,6 +72,52 @@ bool primitives::intersectRect(line scan, point2D C, point2D D)
     return false;
 }
 
+bool primitives::inside(point2D P0, point2D P1, point2D P2)
+{
+    /*
+    %Comprobación de si un punto esta a la izquierda o la derecha de una recta
+
+    % supongamos que:
+    % P1 (X1,Y1)
+    % y
+    % P2 (X2,Y2)
+    % son puntos de la recta y que:
+    % P0 (X0 , Y0) es el punto del que queremos saber su posicion.
+    %
+    % calculamos d = (Y2-Y1)*X0 + (X1-X2)*Y0 + (X2*Y1-Y2*X1)
+    % si d=0 el punto pertenece a la recta
+    % si d>0 el punto esta a la derecha del sentido de la recta
+    % si d<0 el punto esta a la izquierda del sentido de la recta
+    % el sentido de la recta esta dado por
+    % P1------->P2
+    */
+
+
+    int d=0;
+
+    d=(P2.gety()-P1.gety())*P0.getx()+(P1.getx()-P2.getx())*P0.gety()+(P2.getx()*P1.gety()-P2.gety()*P1.getx());
+
+    if(d==0) //En la recta (dentro)
+    {
+        //printf("En la recta\n");
+        return true;
+    }
+    if(d>0) //A la derecha
+    {
+        //printf("A la derecha\n");
+        return false;
+    }
+    if(d<0)//a la izquierda dentro
+    {
+        //printf("A la izquierda\n");
+        return true;
+    }
+
+    return false;
+
+}
+
+
 
 point2D primitives::intersectHor(line scan, point2D A, point2D B)
 {
@@ -1411,6 +1457,61 @@ primitives::uint primitives::endPointCode(double x, double y, double xMin, doubl
 
     return c;
 }
+
+vector<point2D> primitives::SutherlandHodgman(vector<point2D> in, line l, int pos)
+{
+    vector<point2D> out;
+    point2D s,p,i;
+    unsigned int j;
+
+    s=in[in.size()-1];
+
+    for(j=0;j<in.size();j++)
+    {
+        p=in[j];
+
+        if(inside(p,l.getV1(),l.getv2())) //Casos 1 y 4
+        {
+            if(inside(s,l.getV1(),l.getv2())) //caso 1
+            {
+                out.push_back(s);
+            }
+            else //Caso 4
+            {
+                if(pos==0) //vertical
+                {
+                    i=intersectVer(l,s,p);
+                }
+                else //horizontal
+                {
+                    i=intersectHor(l,s,p);
+                }
+                out.push_back(i);
+                out.push_back(p);
+            }
+        }
+        else //Casos 2 y 3
+        {
+            if(inside(s,l.getV1(),l.getv2())) //Caso 2
+            {
+                if(pos==0) //vertical
+                {
+                    i=intersectVer(l,s,p);
+                }
+                else //horizontal
+                {
+                    i=intersectHor(l,s,p);
+                }
+            } //No hay acciones para el caso 3
+        }
+        s=p;
+
+    }
+
+    return out;
+
+}
+
 
 
 

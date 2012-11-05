@@ -25,6 +25,14 @@ private:
     enum{TOP=0x1,BOTTOM=0x2,RIGHT=0x4,LEFT=0x8};
     typedef unsigned int uint;
     static uint endPointCode(double x,double y,double xMin,double xMax,double yMin,double yMax);
+    //Recortado de poligonos
+    vector<point2D> SutherlandHodgman(vector<point2D> in,line l,int pos);
+    /*
+      Devuelve vector de puntos despues de la interseccion, recibe
+      Vector de puntos inicial, linea de escaneo, orientacion de la linea de escaneo (vert=0,hor=1)
+      */
+
+
 public:
     primitives();
     static double filter(int distance);
@@ -32,11 +40,18 @@ public:
     static bool intersectRect(line scan,point2D C,point2D D); //comprueba si hay interseccion entre dos segmentos de recta
     static point2D intersectHor(line scan,point2D A,point2D B); //interseccion contra linea horizontal
     static point2D intersectVer(line scan,point2D A,point2D B); //interseccion contra linea vertical
-    static bool condicion(point2D A, point2D B); //condición para ordenamiento mediante sort de stl
-    static bool uniqueTest(point2D A, point2D B); //condicion para comprobación de elementos repetidos usando STL unique
+    static bool inside(point2D P0,point2D P1,point2D P2); //Punto a evaluar, Recta P1P2
+
+
     //Recortado de lineas p0(x0,y0) p1(x1,y1) rectangulo diagonal xMin yMin a xMax yMax
     static void cohenSutherlandClippingLine(double x0,double y0,double x1, double y1,double xMin,double xMax,double yMin, double yMax);
 
+    //Recortado de poligonos
+
+
+    //Condiciones para STL
+    static bool condicion(point2D A, point2D B); //condición para ordenamiento mediante sort de stl
+    static bool uniqueTest(point2D A, point2D B); //condicion para comprobación de elementos repetidos usando STL unique
 
 
 };
