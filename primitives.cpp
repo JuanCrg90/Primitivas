@@ -936,6 +936,193 @@ void Ellipse::fill()
 
 }
 
+Rectangle::Rectangle()
+{
+    points.resize(4);
+
+    fill=false;
+}
+
+Rectangle::Rectangle(point2D p1, point2D p2, point2D p3, point2D p4)
+{
+    points.resize(4);
+    points[0]=p1;
+    points[1]=p2;
+    points[2]=p3;
+    points[3]=p4;
+
+
+    this->fill=false;
+}
+
+Rectangle::Rectangle(point2D p1, point2D p2, point2D p3, point2D p4, bool fill)
+{
+    points.resize(4);
+    points[0]=p1;
+    points[1]=p2;
+    points[2]=p3;
+    points[3]=p4;
+    this->fill=fill;
+}
+
+void Rectangle::setP1(point2D p)
+{
+    points[0]=p;
+}
+
+void Rectangle::setP1(int x, int y)
+{
+    point2D p1;
+    p1.setX(x);
+    p1.setY(y);
+    points[0]=p1;
+}
+
+void Rectangle::setP2(point2D p)
+{
+    points[1]=p;
+}
+
+void Rectangle::setP2(int x, int y)
+{
+    point2D p2;
+    p2.setX(x);
+    p2.setY(y);
+
+    points[1]=p2;
+}
+
+void Rectangle::setP3(point2D p)
+{
+    points[2]=p;
+
+}
+
+void Rectangle::setP3(int x, int y)
+{
+    point2D p3;
+    p3.setX(x);
+    p3.setY(y);
+    points[2]=p3;
+}
+
+void Rectangle::setP4(point2D p)
+{
+    points[3]=p;
+}
+
+void Rectangle::setP4(int x, int y)
+{
+    point2D p4;
+    p4.setX(x);
+    p4.setY(y);
+    points[3]=p4;
+}
+
+void Rectangle::setFill(bool fill)
+{
+    this->fill=fill;
+}
+
+vector<point2D> Rectangle::getRectangle()
+{
+    return points;
+}
+
+point2D Rectangle::getP1()
+{
+    return points[0];
+}
+
+point2D Rectangle::getP2()
+{
+    return points[1];
+}
+
+point2D Rectangle::getP3()
+{
+    return points[2];
+}
+
+point2D Rectangle::getP4()
+{
+    return points[3];
+}
+
+bool Rectangle::getFillStatus()
+{
+    return fill;
+}
+
+void Rectangle::draw()
+{
+    unsigned int i;
+
+
+    if(fill)
+    {
+        int xMin,yMin,xMax,yMax;
+
+        xMin=points[0].getx();
+        xMax=points[0].getx();
+
+        yMin=points[0].gety();
+        yMax=points[0].gety();
+
+        for(i=0;i<points.size()-1;i++)
+        {
+            //Obteniendo xMin y xmax
+            if(points[i].getx()<=xMin)
+            {
+                xMin=points[i].getx();
+            }
+            else if(points[i].getx()>=xMin)
+            {
+                xMax=points[i].getx();
+
+            }
+            //Obteniendo yMin y yMax
+            if(points[i].gety()<=yMin)
+            {
+                yMin=points[i].gety();
+            }
+            else if(points[i].gety()>=yMin)
+            {
+                yMax=points[i].gety();
+
+            }
+        }
+
+
+        for(int j=yMax;j>yMin;j--)
+        {
+            for(int k=xMin;k<xMax;k++)
+            {
+                drawPixel2D(k,j);
+            }
+        }
+
+
+
+
+
+
+
+    }
+
+    for(i=0;i<points.size()-1;i++)
+    {
+        drawLine(getRectangle().at(i).getx(),getRectangle().at(i).gety(),getRectangle().at(i+1).getx(),getRectangle().at(i+1).gety());
+    }
+    drawLine(getRectangle().at(i).getx(),getRectangle().at(i).gety(),getRectangle().at(0).getx(),getRectangle().at(0).gety());
+
+
+}
+
+
+
+
+
 
 
 

@@ -150,5 +150,45 @@ public:
 
 
 
+class Rectangle:public line
+{
+private:
+    vector<point2D> points;
+    bool fill;
+
+public:
+    //constructores
+    Rectangle();
+    Rectangle(point2D p1,point2D p2,point2D p3, point2D p4);
+    Rectangle(point2D p1,point2D p2,point2D p3, point2D p4,bool fill);
+    //sets y gets
+    void setP1(point2D p);
+    void setP1(int x,int y);
+
+    void setP2(point2D p);
+    void setP2(int x,int y);
+
+    void setP3(point2D p);
+    void setP3(int x,int y);
+
+    void setP4(point2D p);
+    void setP4(int x,int y);
+
+    void setFill(bool fill);
+
+    vector<point2D> getRectangle();
+    point2D getP1();
+    point2D getP2();
+    point2D getP3();
+    point2D getP4();
+    bool getFillStatus();
+
+    //primitiva de pintado
+    void draw();
+
+
+
+};
+
 
 #endif // PRIMITIVES_H
