@@ -1324,11 +1324,92 @@ void Polygon::polygonFill()
         }
 
         intersections.clear();
-
     }
 
 
 
+}
+
+void primitives::cohenSutherlandClippingLine(double x0, double y0, double x1, double y1, double xMin, double xMax, double yMin, double yMax)
+{
+    uint code1,code2,ocode;
+    int accept=0,done=0;
+    line l;
+
+    code1=endPointCode(x0,y0,xMin,xMax,yMin,yMax);
+    code2=endPointCode(x1,y1,xMin,xMax,yMin,yMax);
+
+    do
+    {
+        if(!(code1|code2))
+        {
+            accept=1;
+            done=1;
+        }
+        else if(code1&code2)
+            done=1;
+        else
+        {
+            double x,y;
+            ocode=code1?code1:code2;
+
+            if(ocode&TOP)
+            {
+                x=x0+(x1-x0)*(yMax-y0)/(y1-y0);
+                y=yMax;
+            }
+            else if(ocode&BOTTOM)
+            {
+                x=x0+(x1-x0)*(yMin-y0)/(y1-y0);
+                y=yMin;
+            }
+            else if(ocode&LEFT)
+            {
+                y=y0+(y1-y0)/(x1-x0)*(xMin-x0);
+                x=xMin;
+            }
+            else
+            {
+                y=y0+(y1-y0)/(x1-x0)*(xMax-x0);
+                x=xMax;
+            }
+            if(ocode==code1)
+            {
+                x0=x;
+                y0=y;
+                code1=endPointCode(x0,y0,xMin,xMax,yMin,yMax);
+            }
+            else
+            {
+                x1=x;
+                y1=y;
+                code2=endPointCode(x1,y1,xMin,xMax,yMin,yMax);
+            }
+
+        }
+    }while(done==0);
+
+    if(accept)
+    {
+        line l(x0,y0,x1,y1);
+        l.drawLine();
+    }
+}
+
+primitives::uint primitives::endPointCode(double x, double y, double xMin, double xMax, double yMin, double yMax)
+{
+    uint c=0;
+
+    if(x<xMin)
+        c|=LEFT;
+    else if(x>xMax)
+        c|=RIGHT;
+    else if(y<yMin)
+        c|=BOTTOM;
+    else if(y>yMax)
+        c|=TOP;
+
+    return c;
 }
 
 

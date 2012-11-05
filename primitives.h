@@ -21,6 +21,10 @@ class point2D;
 
 class primitives
 {
+private:
+    enum{TOP=0x1,BOTTOM=0x2,RIGHT=0x4,LEFT=0x8};
+    typedef unsigned int uint;
+    static uint endPointCode(double x,double y,double xMin,double xMax,double yMin,double yMax);
 public:
     primitives();
     static double filter(int distance);
@@ -30,6 +34,10 @@ public:
     static point2D intersectVer(line scan,point2D A,point2D B); //interseccion contra linea vertical
     static bool condicion(point2D A, point2D B); //condición para ordenamiento mediante sort de stl
     static bool uniqueTest(point2D A, point2D B); //condicion para comprobación de elementos repetidos usando STL unique
+    //Recortado de lineas p0(x0,y0) p1(x1,y1) rectangulo diagonal xMin yMin a xMax yMax
+    static void cohenSutherlandClippingLine(double x0,double y0,double x1, double y1,double xMin,double xMax,double yMin, double yMax);
+
+
 
 };
 
@@ -217,10 +225,9 @@ public:
 
     //Primitiva Pintado
     void draw();
-
-
-
 };
+
+
 
 
 #endif // PRIMITIVES_H
