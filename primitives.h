@@ -10,11 +10,14 @@
 #endif
 #include <cmath>
 #include<vector>
+#include <algorithm>
 
+#include <QDebug>
 
 using namespace std;
 
-
+class line;
+class point2D;
 
 class primitives
 {
@@ -22,6 +25,11 @@ public:
     primitives();
     static double filter(int distance);
     static void intensifyPixel(int x,int y,double distance);
+    static bool intersectRect(line scan,point2D C,point2D D); //comprueba si hay interseccion entre dos segmentos de recta
+    static point2D intersectHor(line scan,point2D A,point2D B); //interseccion contra linea horizontal
+    static point2D intersectVer(line scan,point2D A,point2D B); //interseccion contra linea vertical
+    static bool condicion(point2D A, point2D B); //condición para ordenamiento mediante sort de stl
+    static bool uniqueTest(point2D A, point2D B); //condicion para comprobación de elementos repetidos usando STL unique
 
 };
 
@@ -184,6 +192,30 @@ public:
     bool getFillStatus();
 
     //primitiva de pintado
+    void draw();
+};
+
+class Polygon:public line
+{
+private:
+    vector<point2D> points;
+    bool fill;
+
+    void polygonFill();
+
+public:
+    //Constructores
+    Polygon();
+
+    //sets y gets
+    void setpoint(point2D p);
+    void setpoint(int x, int y);
+    void setFill(bool fill);
+
+    point2D getPoint(int index);
+    bool getFillStatus();
+
+    //Primitiva Pintado
     void draw();
 
 

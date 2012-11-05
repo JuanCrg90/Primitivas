@@ -53,19 +53,14 @@ void glvisual::draw()
 {
 
 
-    Rectangle r;
+    Polygon p;
 
-    r.setP1(100,100);
-    r.setP2(200,100);
-    r.setP3(200,200);
-    r.setP4(100,200);
-    r.setFill(true);
-
-    r.draw();
-
-
-
-
-
+    p.setpoint(100,100);
+    p.setpoint(200,100);
+    p.setpoint(200,400);
+    p.setpoint(100,300);
+    p.setpoint(150,250);
+    p.setFill(false);
+    p.draw();
 
 }

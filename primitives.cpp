@@ -20,6 +20,90 @@ void primitives::intensifyPixel(int x, int y, double distance)
 }
 
 
+bool primitives::intersectRect(line scan, point2D C, point2D D)
+{
+
+
+    point2D A,B;
+    float r;
+    float s;
+
+    A.setX(scan.getV1().getx());
+    A.setY(scan.getV1().gety());
+
+    B.setX(scan.getv2().getx());
+    B.setY(scan.getv2().gety());
+
+    /*
+
+            (Ay-Cy)(Dx-Cx)-(Ax-Cx)(Dy-Cy)
+        r = -----------------------------  (eqn 1)
+            (Bx-Ax)(Dy-Cy)-(By-Ay)(Dx-Cx)
+
+            (Ay-Cy)(Bx-Ax)-(Ax-Cx)(By-Ay)
+        s = -----------------------------  (eqn 2)
+            (Bx-Ax)(Dy-Cy)-(By-Ay)(Dx-Cx)
+
+*/
+
+    float r_numerator=((B.getx()-A.getx())*(D.gety()-C.gety())-(B.gety()-A.gety())*(D.getx()-C.getx()));
+    float s_numerator=((B.getx()-A.getx())*(D.gety()-C.gety())-(B.gety()-A.gety())*(D.getx()-C.getx()));
+
+
+    if(r_numerator!=0 && s_numerator!=0)
+    {
+        r=((A.gety()-C.gety())*(D.getx()-C.getx())-(A.getx()-C.getx())*(D.gety()-C.gety()))/r_numerator;
+        s=((A.gety()-C.gety())*(B.getx()-A.getx())-(A.getx()-C.getx())*(B.gety()-A.gety()))/s_numerator;
+    }
+    else
+    {
+        return false;
+    }
+    /*
+ If 0<=r<=1 & 0<=s<=1, intersection exists
+            r<0 or r>1 or s<0 or s>1 line segments do not intersect
+            */
+
+
+    if(0<=r && r<=1 && 0<=s && s<=1)
+    {
+        return true;
+    }
+    return false;
+}
+
+
+point2D primitives::intersectHor(line scan, point2D A, point2D B)
+{
+    point2D intersect;
+
+    intersect.setX(A.getx()+(B.getx()-A.getx())*(scan.getV1().gety()-A.gety())/(B.gety()-A.gety()));
+    intersect.setY(scan.getV1().gety());
+
+    return intersect;
+
+}
+
+point2D primitives::intersectVer(line scan, point2D A, point2D B)
+{
+    point2D intersect;
+
+    intersect.setX(A.gety()+(B.gety()-A.gety())/(B.getx()-A.getx())*(scan.getV1().getx()-A.getx()));
+    intersect.setY(scan.getV1().getx());
+
+    return intersect;
+}
+
+bool primitives::condicion(point2D A, point2D B)
+{
+    return A.getx()<B.getx();
+}
+
+
+bool primitives::uniqueTest(point2D A, point2D B)
+{
+    return A.getx()==B.getx();
+}
 
 point2D::point2D()
 {
@@ -1119,13 +1203,133 @@ void Rectangle::draw()
 
 }
 
+Polygon::Polygon()
+{
+    fill=false;
+}
+
+void Polygon::setpoint(point2D p)
+{
+    points.push_back(p);
+}
+
+void Polygon::setpoint(int x, int y)
+{
+    point2D p;
+    p.setpoint(x,y);
+    points.push_back(p);
+}
+
+void Polygon::setFill(bool fill)
+{
+    this->fill=fill;
+}
+
+point2D Polygon::getPoint(int index)
+{
+    return points.at(index);
+}
+
+bool Polygon::getFillStatus()
+{
+    return fill;
+}
+
+void Polygon::draw()
+{
+    unsigned int i;
+
+    if(fill)
+    {
+        polygonFill();
+    }
+
+    for(i=0;i<points.size()-1;i++)
+    {
+        drawLine(getPoint(i).getx(),getPoint(i).gety(),getPoint(i+1).getx(),getPoint(i+1).gety());
+    }
+    drawLine(getPoint(i).getx(),getPoint(i).gety(),getPoint(0).getx(),getPoint(0).gety());
+
+}
+
+void Polygon::polygonFill()
+{
+    unsigned int i,j;
+    int xMin,yMin,xMax,yMax;
+    line scan;
+    vector<point2D> intersections;
+
+    xMin=points[0].getx();
+    xMax=points[0].getx();
+
+    yMin=points[0].gety();
+    yMax=points[0].gety();
+
+    for(i=0;i<points.size()-1;i++)
+    {
+        //Obteniendo xMin y xmax
+        if(points[i].getx()<=xMin)
+        {
+            xMin=points[i].getx();
+        }
+        else if(points[i].getx()>=xMin)
+        {
+            xMax=points[i].getx();
+
+        }
+        //Obteniendo yMin y yMax
+        if(points[i].gety()<=yMin)
+        {
+            yMin=points[i].gety();
+        }
+        else if(points[i].gety()>=yMax)
+        {
+            yMax=points[i].gety();
+
+        }
+    }
+
+    scan.setV1(xMin,yMax);
+    scan.setV2(xMax,yMax);
+
+
+    //Calculando intersecciones
+    for(i=yMax;i>yMin;i--)
+    {
+        scan.setV1(xMin,i);
+        scan.setV2(xMax,i);
+
+        for(j=0;j<points.size()-1;j++)
+        {
+
+            if(primitives::intersectRect(scan,points.at(j),points.at(j+1)))
+            {
+                intersections.push_back(primitives::intersectHor(scan,points.at(j),points.at(j+1)));
+            }
+        }
+        if(primitives::intersectRect(scan,points.at(j),points.at(0)))
+        {
+            intersections.push_back(primitives::intersectHor(scan,points.at(j),points.at(0)));
+        }
+
+
+        //sort
+        sort(intersections.begin(),intersections.end(),primitives::condicion);
+        unique(intersections.begin(),intersections.end(),primitives::uniqueTest);
+
+        //draw
+        for(j=0;j<intersections.size();j+=2)
+        {
+            drawLine(intersections[j].getx(),intersections[j].gety(),intersections[j+1].getx(),intersections[j+1].gety());
+        }
+
+        intersections.clear();
+
+    }
 
 
 
-
-
-
-
+}
 
 
 
