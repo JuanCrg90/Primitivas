@@ -18,6 +18,8 @@ using namespace std;
 
 class line;
 class point2D;
+class Polygon;
+class Rectangle;
 
 class primitives
 {
@@ -26,7 +28,7 @@ private:
     typedef unsigned int uint;
     static uint endPointCode(double x,double y,double xMin,double xMax,double yMin,double yMax);
     //Recortado de poligonos
-    vector<point2D> SutherlandHodgman(vector<point2D> in,line l,int pos);
+    static vector<point2D> SutherlandHodgman(vector<point2D> in,line l,int pos);
     /*
       Devuelve vector de puntos despues de la interseccion, recibe
       Vector de puntos inicial, linea de escaneo, orientacion de la linea de escaneo (vert=0,hor=1)
@@ -47,6 +49,7 @@ public:
     static void cohenSutherlandClippingLine(double x0,double y0,double x1, double y1,double xMin,double xMax,double yMin, double yMax);
 
     //Recortado de poligonos
+    static Polygon polygonClipping(Polygon in,Rectangle r);
 
 
     //Condiciones para STL
@@ -234,8 +237,10 @@ public:
     void setpoint(point2D p);
     void setpoint(int x, int y);
     void setFill(bool fill);
+    void setPolygon(vector<point2D> poly);
 
     point2D getPoint(int index);
+    vector<point2D> getPoints(); //devuelve el arreglo de puntos
     bool getFillStatus();
 
     //Primitiva Pintado

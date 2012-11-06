@@ -52,16 +52,37 @@ void glvisual::paintGL()
 void glvisual::draw()
 {
 
-/*
-    Polygon p;
-    p.setpoint(100,100);
-    p.setpoint(200,100);
-    p.setpoint(200,400);
-    p.setpoint(100,300);
-    p.setpoint(150,250);
-    p.setFill(true);
-    p.draw();*/
 
+    Polygon p,cut;
+    Rectangle r1;
+
+
+
+    p.setpoint(100,300);
+    p.setpoint(200,200);
+    p.setpoint(300,300);
+    p.setpoint(200,400);
+
+
+    glColor3f(1.0,0.0,0.0);
+    p.draw();
+
+
+
+    r1.setP1(150,450);
+    r1.setP2(150,50);
+    r1.setP3(250,50);
+    r1.setP4(250,450);
+    glColor3f(1.0,0.0,1.0);
+    r1.draw();
+
+    cut=primitives::polygonClipping(p,r1);
+    glColor3f(1.0,1.0,0.0);
+    cut.setFill(true);
+    cut.draw();
+
+
+    /*
 
 
     line l(50,50,300,300);
@@ -84,7 +105,10 @@ void glvisual::draw()
     glPushMatrix();
     glColor3f(0.0,1.0,0.0);
     primitives::cohenSutherlandClippingLine(l.getV1().getx(),l.getV1().gety(),l.getv2().getx(),l.getv2().gety(),120,280,120,280);
-    glPopMatrix();
+    glPopMatrix();*/
+
+
+
 
 
 

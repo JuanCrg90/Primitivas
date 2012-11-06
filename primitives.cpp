@@ -134,8 +134,8 @@ point2D primitives::intersectVer(line scan, point2D A, point2D B)
 {
     point2D intersect;
 
-    intersect.setX(A.gety()+(B.gety()-A.gety())/(B.getx()-A.getx())*(scan.getV1().getx()-A.getx()));
-    intersect.setY(scan.getV1().getx());
+    intersect.setY(A.gety()+(B.gety()-A.gety())/(B.getx()-A.getx())*(scan.getV1().getx()-A.getx()));
+    intersect.setX(scan.getV1().getx());
 
     return intersect;
 }
@@ -1271,9 +1271,21 @@ void Polygon::setFill(bool fill)
     this->fill=fill;
 }
 
+
+void Polygon::setPolygon(vector<point2D> poly)
+{
+    points=poly;
+}
+
+
 point2D Polygon::getPoint(int index)
 {
     return points.at(index);
+}
+
+vector<point2D> Polygon::getPoints()
+{
+    return points;
 }
 
 bool Polygon::getFillStatus()
@@ -1474,7 +1486,7 @@ vector<point2D> primitives::SutherlandHodgman(vector<point2D> in, line l, int po
         {
             if(inside(s,l.getV1(),l.getv2())) //caso 1
             {
-                out.push_back(s);
+                out.push_back(p);
             }
             else //Caso 4
             {
@@ -1502,6 +1514,7 @@ vector<point2D> primitives::SutherlandHodgman(vector<point2D> in, line l, int po
                 {
                     i=intersectHor(l,s,p);
                 }
+                out.push_back(i);
             } //No hay acciones para el caso 3
         }
         s=p;
@@ -1511,6 +1524,47 @@ vector<point2D> primitives::SutherlandHodgman(vector<point2D> in, line l, int po
     return out;
 
 }
+
+Polygon primitives::polygonClipping(Polygon in, Rectangle r)
+{
+    Polygon p;
+    vector<point2D> out,aux;
+
+    line l;
+
+    l.setLine(r.getP1(),r.getP2()); //vertical izquierda
+    out=primitives::SutherlandHodgman(in.getPoints(),l,0);
+
+
+    aux.resize(out.size());
+    aux=out;
+    out.clear();
+
+    l.setLine(r.getP2(),r.getP3()); //horizontal abajo
+    out=primitives::SutherlandHodgman(aux,l,1);
+
+    aux.resize(out.size());
+    aux=out;
+    out.clear();
+
+    l.setLine(r.getP3(),r.getP4()); //vertical derecha
+     out=primitives::SutherlandHodgman(aux,l,0);
+
+     aux.resize(out.size());
+     aux=out;
+     out.clear();
+
+     l.setLine(r.getP4(),r.getP1()); //horizontal arriba
+     out=primitives::SutherlandHodgman(aux,l,1);
+
+     p.setPolygon(out);
+
+     return p;
+
+}
+
+
+
 
 
 
