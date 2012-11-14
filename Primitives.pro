@@ -1,10 +1,11 @@
 QT+=core gui opengl
-#LIBS+= -lm -lglut -lGLU
+LIBS+= -lm -lglut -lGLU
 
 HEADERS += \
     glvisual.h \
     mainwindow.h \
-    primitives.h
+    primitives.h \
+    MyTree/mytree.h
 
 SOURCES += \
     glvisual.cpp \

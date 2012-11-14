@@ -11,15 +11,22 @@
 #include <cmath>
 #include<vector>
 #include <algorithm>
+#include "MyTree/mytree.h"
 
 #include <QDebug>
 
 using namespace std;
 
+#define MIN_WIDTH 642/642
+#define MIN_HEIGHT 509/509
+
+
 class line;
 class point2D;
 class Polygon;
 class Rectangle;
+class QuadNode;
+
 
 class primitives
 {
@@ -33,6 +40,8 @@ private:
       Devuelve vector de puntos despues de la interseccion, recibe
       Vector de puntos inicial, linea de escaneo, orientacion de la linea de escaneo (vert=0,hor=1)
       */
+
+
 
 
 public:
@@ -57,9 +66,10 @@ public:
     static bool uniqueTest(point2D A, point2D B); //condicion para comprobación de elementos repetidos usando STL unique
 
 
+
+
+
 };
-
-
 
 //Clase Punto
 class point2D
@@ -246,6 +256,67 @@ public:
     //Primitiva Pintado
     void draw();
 };
+
+//Clase para el manejo de caracteristicas del QuadNode
+class QuadNode
+{
+
+private:
+    vector<point2D> points;
+    int x,y; //punto de la esquina de la ventana
+    int width;
+    int height;
+
+
+public:
+    //Constructores y destructor
+    QuadNode();
+    ~QuadNode();
+
+    //sets y gets
+    void addPoints(vector<point2D> points);
+    void addPoint(point2D point);
+    void setWidth(int w);
+    void setHeight(int h);
+    void setX(int x);
+    void setY(int y);
+    vector<point2D> getPoints();
+    point2D getPoint(int index);
+    int getWidth();
+    int getHeight();
+    int getX();
+    int getY();
+
+    void clear();
+
+
+};
+
+//Clase QuadTree ytiliza el template mytree para su construccion
+class QuadTree
+{
+private:
+    mytree<QuadNode> myQuadTree; //estructura del arbol
+    node<QuadNode> *pos; //posición en el arbol
+
+    ///Manejo de Quad Tree
+    bool isNE(point2D p, int xmid, int ymid);
+    bool isNW(point2D p, int xmid, int ymid);
+    bool isSE(point2D p, int xmid, int ymid);
+    bool isSW(point2D p, int xmid, int ymid);
+
+    void partition(node<QuadNode> *pos);
+
+
+
+public:
+    //Operaciones en el QuadTree
+    void partition(vector<point2D> points, int width, int height);
+    void recorrer();
+
+
+};
+
 
 
 

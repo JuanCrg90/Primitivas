@@ -151,6 +151,187 @@ bool primitives::uniqueTest(point2D A, point2D B)
     return A.getx()==B.getx();
 }
 
+
+void primitives::cohenSutherlandClippingLine(double x0, double y0, double x1, double y1, double xMin, double xMax, double yMin, double yMax)
+{
+    uint code1,code2,ocode;
+    int accept=0,done=0;
+    line l;
+
+    code1=endPointCode(x0,y0,xMin,xMax,yMin,yMax);
+    code2=endPointCode(x1,y1,xMin,xMax,yMin,yMax);
+
+    do
+    {
+        if(!(code1|code2))
+        {
+            accept=1;
+            done=1;
+        }
+        else if(code1&code2)
+            done=1;
+        else
+        {
+            double x,y;
+            ocode=code1?code1:code2;
+
+            if(ocode&TOP)
+            {
+                x=x0+(x1-x0)*(yMax-y0)/(y1-y0);
+                y=yMax;
+            }
+            else if(ocode&BOTTOM)
+            {
+                x=x0+(x1-x0)*(yMin-y0)/(y1-y0);
+                y=yMin;
+            }
+            else if(ocode&LEFT)
+            {
+                y=y0+(y1-y0)/(x1-x0)*(xMin-x0);
+                x=xMin;
+            }
+            else
+            {
+                y=y0+(y1-y0)/(x1-x0)*(xMax-x0);
+                x=xMax;
+            }
+            if(ocode==code1)
+            {
+                x0=x;
+                y0=y;
+                code1=endPointCode(x0,y0,xMin,xMax,yMin,yMax);
+            }
+            else
+            {
+                x1=x;
+                y1=y;
+                code2=endPointCode(x1,y1,xMin,xMax,yMin,yMax);
+            }
+
+        }
+    }while(done==0);
+
+    if(accept)
+    {
+        line l(x0,y0,x1,y1);
+        l.drawLine();
+    }
+}
+
+primitives::uint primitives::endPointCode(double x, double y, double xMin, double xMax, double yMin, double yMax)
+{
+    uint c=0;
+
+    if(x<xMin)
+        c|=LEFT;
+    else if(x>xMax)
+        c|=RIGHT;
+    else if(y<yMin)
+        c|=BOTTOM;
+    else if(y>yMax)
+        c|=TOP;
+
+    return c;
+}
+
+vector<point2D> primitives::SutherlandHodgman(vector<point2D> in, line l, int pos)
+{
+    vector<point2D> out;
+    point2D s,p,i;
+    unsigned int j;
+
+    s=in[in.size()-1];
+
+    for(j=0;j<in.size();j++)
+    {
+        p=in[j];
+
+        if(inside(p,l.getV1(),l.getv2())) //Casos 1 y 4
+        {
+            if(inside(s,l.getV1(),l.getv2())) //caso 1
+            {
+                out.push_back(p);
+            }
+            else //Caso 4
+            {
+                if(pos==0) //vertical
+                {
+                    i=intersectVer(l,s,p);
+                }
+                else //horizontal
+                {
+                    i=intersectHor(l,s,p);
+                }
+                out.push_back(i);
+                out.push_back(p);
+            }
+        }
+        else //Casos 2 y 3
+        {
+            if(inside(s,l.getV1(),l.getv2())) //Caso 2
+            {
+                if(pos==0) //vertical
+                {
+                    i=intersectVer(l,s,p);
+                }
+                else //horizontal
+                {
+                    i=intersectHor(l,s,p);
+                }
+                out.push_back(i);
+            } //No hay acciones para el caso 3
+        }
+        s=p;
+
+    }
+
+    return out;
+
+}
+
+Polygon primitives::polygonClipping(Polygon in, Rectangle r)
+{
+    Polygon p;
+    vector<point2D> out,aux;
+
+    line l;
+
+    l.setLine(r.getP1(),r.getP2()); //vertical izquierda
+    out=primitives::SutherlandHodgman(in.getPoints(),l,0);
+
+
+    aux.resize(out.size());
+    aux=out;
+    out.clear();
+
+    l.setLine(r.getP2(),r.getP3()); //horizontal abajo
+    out=primitives::SutherlandHodgman(aux,l,1);
+
+    aux.resize(out.size());
+    aux=out;
+    out.clear();
+
+    l.setLine(r.getP3(),r.getP4()); //vertical derecha
+    out=primitives::SutherlandHodgman(aux,l,0);
+
+    aux.resize(out.size());
+    aux=out;
+    out.clear();
+
+    l.setLine(r.getP4(),r.getP1()); //horizontal arriba
+    out=primitives::SutherlandHodgman(aux,l,1);
+
+    p.setFill(in.getFillStatus());
+    p.setPolygon(out);
+
+    return p;
+
+}
+
+
+
+
+
 point2D::point2D()
 {
     this->x=0;
@@ -1373,7 +1554,7 @@ void Polygon::polygonFill()
 
         //sort
         sort(intersections.begin(),intersections.end(),primitives::condicion);
-        unique(intersections.begin(),intersections.end(),primitives::uniqueTest);
+        //unique(intersections.begin(),intersections.end(),primitives::uniqueTest); //irregulares
 
         //draw
         for(j=0;j<intersections.size();j+=2)
@@ -1388,184 +1569,310 @@ void Polygon::polygonFill()
 
 }
 
-void primitives::cohenSutherlandClippingLine(double x0, double y0, double x1, double y1, double xMin, double xMax, double yMin, double yMax)
+
+QuadNode::QuadNode()
 {
-    uint code1,code2,ocode;
-    int accept=0,done=0;
-    line l;
+    width=0;
+    height=0;
+}
 
-    code1=endPointCode(x0,y0,xMin,xMax,yMin,yMax);
-    code2=endPointCode(x1,y1,xMin,xMax,yMin,yMax);
+QuadNode::~QuadNode()
+{
+    points.clear();
+}
 
-    do
+void QuadNode::addPoints(vector<point2D> points)
+{
+    this->points=points;
+}
+
+void QuadNode::addPoint(point2D point)
+{
+    this->points.push_back(point);
+
+}
+
+vector<point2D> QuadNode::getPoints()
+{
+    return points;
+}
+
+point2D QuadNode::getPoint(int index)
+{
+    return points.at(index);
+}
+
+void QuadNode::setWidth(int w)
+{
+    this->width=w;
+}
+
+void QuadNode::setHeight(int h)
+{
+    this->height=h;
+}
+
+int QuadNode::getWidth()
+{
+    return width;
+}
+
+int QuadNode::getHeight()
+{
+    return height;
+}
+
+
+void QuadNode::clear()
+{
+    points.clear();
+    width=0;
+    height=0;
+}
+
+
+void QuadNode::setX(int x)
+{
+    this->x=x;
+}
+
+void QuadNode::setY(int y)
+{
+    this->y=y;
+}
+
+int QuadNode::getX()
+{
+    return x;
+}
+
+int QuadNode::getY()
+{
+    return y;
+}
+
+
+
+bool QuadTree::isNE(point2D p,int xmid,int ymid)
+{
+    if((p.getx()<=xmid) && (p.gety()>=ymid)) return true;
+
+    return false;
+}
+
+bool QuadTree::isNW(point2D p, int xmid, int ymid)
+{
+    if((p.getx()>xmid) && (p.gety()>=ymid)) return true;
+
+    return false;
+}
+
+bool QuadTree::isSE(point2D p, int xmid, int ymid)
+{
+    if((p.getx()<=xmid) && (p.gety()<ymid)) return true;
+
+    return false;
+}
+
+bool QuadTree::isSW(point2D p, int xmid, int ymid)
+{
+    if((p.getx()>xmid) && (p.gety()<ymid)) return true;
+
+    return false;
+}
+
+void QuadTree::partition(vector<point2D> points,int width,int height)
+{
+    QuadNode auxNode; //nodo auxiliar
+
+
+    auxNode.addPoints(points);
+
+    auxNode.setX(0);
+    auxNode.setY(0);
+    auxNode.setWidth(width);
+    auxNode.setHeight(height);
+
+    pos=myQuadTree.initTree(auxNode);
+
+
+    partition(pos);
+
+    return;
+}
+
+
+
+void QuadTree::partition(node<QuadNode> *pos)
+{
+    vector<point2D> NE;
+    vector<point2D> NW;
+    vector<point2D> SW;
+    vector<point2D> SE;
+
+    vector< QuadNode > in;
+    vector<node<QuadNode>* > laux;
+
+    QuadNode auxNode; //nodo auxiliar
+
+
+    if(pos->data.getPoints().empty()) return;
+
+    if(pos->data.getWidth()>=MIN_WIDTH && pos->data.getHeight()>=MIN_HEIGHT)
     {
-        if(!(code1|code2))
+        for(unsigned int i=0;i<pos->data.getPoints().size();i++)
         {
-            accept=1;
-            done=1;
+            if(isNE(pos->data.getPoint(i),pos->data.getX()+pos->data.getWidth()/2,pos->data.getY()+pos->data.getHeight()/2))
+            {
+                qDebug()<<"NE";
+                NE.push_back(pos->data.getPoint(i));
+            }
+            else if(isNW(pos->data.getPoint(i),pos->data.getX()+pos->data.getWidth()/2,pos->data.getY()+pos->data.getHeight()/2))
+            {
+                qDebug()<<"NW";
+                NW.push_back(pos->data.getPoint(i));
+            }
+            else if(isSW(pos->data.getPoint(i),pos->data.getX()+pos->data.getWidth()/2,pos->data.getY()+pos->data.getHeight()/2))
+            {
+                qDebug()<<"SW";
+                SW.push_back(pos->data.getPoint(i));
+            }
+            else if(isSE(pos->data.getPoint(i),pos->data.getX()+pos->data.getWidth()/2,pos->data.getY()+pos->data.getHeight()/2))
+            {
+                qDebug()<<"SE";
+                SE.push_back(pos->data.getPoint(i));
+            }
         }
-        else if(code1&code2)
-            done=1;
-        else
-        {
-            double x,y;
-            ocode=code1?code1:code2;
 
-            if(ocode&TOP)
-            {
-                x=x0+(x1-x0)*(yMax-y0)/(y1-y0);
-                y=yMax;
-            }
-            else if(ocode&BOTTOM)
-            {
-                x=x0+(x1-x0)*(yMin-y0)/(y1-y0);
-                y=yMin;
-            }
-            else if(ocode&LEFT)
-            {
-                y=y0+(y1-y0)/(x1-x0)*(xMin-x0);
-                x=xMin;
-            }
-            else
-            {
-                y=y0+(y1-y0)/(x1-x0)*(xMax-x0);
-                x=xMax;
-            }
-            if(ocode==code1)
-            {
-                x0=x;
-                y0=y;
-                code1=endPointCode(x0,y0,xMin,xMax,yMin,yMax);
-            }
-            else
-            {
-                x1=x;
-                y1=y;
-                code2=endPointCode(x1,y1,xMin,xMax,yMin,yMax);
-            }
+        auxNode.addPoints(NE);
+        if(auxNode.getPoints().size()!=0)
+        {
+            auxNode.setX(pos->data.getX());
+            auxNode.setY(pos->data.getY()+pos->data.getHeight()/2);
+
+            auxNode.setWidth(pos->data.getWidth()/2);
+            auxNode.setHeight(pos->data.getHeight()/2);
+
+            qDebug()<<auxNode.getX()<<","<<auxNode.getY();
 
         }
-    }while(done==0);
+        in.push_back(auxNode);
+        auxNode.clear();
 
-    if(accept)
-    {
-        line l(x0,y0,x1,y1);
-        l.drawLine();
+
+        auxNode.addPoints(NW);
+        if(auxNode.getPoints().size()!=0)
+        {
+
+            auxNode.setX(pos->data.getX()+pos->data.getWidth()/2);
+            auxNode.setY(pos->data.getY()+pos->data.getHeight()/2);
+
+            auxNode.setWidth(pos->data.getWidth()/2);
+            auxNode.setHeight(pos->data.getHeight()/2);
+
+            qDebug()<<auxNode.getX()<<","<<auxNode.getY();
+
+
+        }
+        in.push_back(auxNode);
+        auxNode.clear();
+
+        auxNode.addPoints(SW);
+        if(auxNode.getPoints().size()!=0)
+        {
+
+
+            auxNode.setX(pos->data.getX()+pos->data.getWidth()/2);
+            auxNode.setY(pos->data.getY());
+
+            auxNode.setWidth(pos->data.getWidth()/2);
+            auxNode.setHeight(pos->data.getHeight()/2);
+
+            qDebug()<<auxNode.getX()<<","<<auxNode.getY();
+
+
+        }
+        in.push_back(auxNode);
+        auxNode.clear();
+
+        auxNode.addPoints(SE);
+        if(auxNode.getPoints().size()!=0)
+        {
+
+            auxNode.setX(pos->data.getX());
+            auxNode.setY(pos->data.getY());
+
+            auxNode.setWidth(pos->data.getWidth()/2);
+            auxNode.setHeight(pos->data.getHeight()/2);
+
+            qDebug()<<auxNode.getX()<<","<<auxNode.getY();
+
+
+        }
+        in.push_back(auxNode);
+        auxNode.clear();
+
+
+        laux=myQuadTree.insert(pos,in,in.size());
+
+
+        partition(laux[0]); //NE
+        partition(laux[1]); //NW
+        partition(laux[2]); //SW
+        partition(laux[3]); //SE
+
     }
+
+    return;
+
 }
 
-primitives::uint primitives::endPointCode(double x, double y, double xMin, double xMax, double yMin, double yMax)
+void QuadTree::recorrer()
 {
-    uint c=0;
+    node<QuadNode> *aux;
+    queue< node<QuadNode>*> auxQ; //cola auxiliar para el recorrido del arbol
 
-    if(x<xMin)
-        c|=LEFT;
-    else if(x>xMax)
-        c|=RIGHT;
-    else if(y<yMin)
-        c|=BOTTOM;
-    else if(y>yMax)
-        c|=TOP;
+    int xm,ym;
 
-    return c;
-}
+    aux=myQuadTree.getRoot();
+    auxQ.push(aux);
 
-vector<point2D> primitives::SutherlandHodgman(vector<point2D> in, line l, int pos)
-{
-    vector<point2D> out;
-    point2D s,p,i;
-    unsigned int j;
-
-    s=in[in.size()-1];
-
-    for(j=0;j<in.size();j++)
+    while(!auxQ.empty())
     {
-        p=in[j];
+        aux=auxQ.front();
 
-        if(inside(p,l.getV1(),l.getv2())) //Casos 1 y 4
+        if(aux->data.getPoints().empty())
         {
-            if(inside(s,l.getV1(),l.getv2())) //caso 1
-            {
-                out.push_back(p);
-            }
-            else //Caso 4
-            {
-                if(pos==0) //vertical
-                {
-                    i=intersectVer(l,s,p);
-                }
-                else //horizontal
-                {
-                    i=intersectHor(l,s,p);
-                }
-                out.push_back(i);
-                out.push_back(p);
-            }
+            auxQ.pop();
+            continue;
         }
-        else //Casos 2 y 3
+
+        xm=(aux->data.getX()+aux->data.getWidth()/2);
+        ym=(aux->data.getY()+aux->data.getHeight()/2);
+
+
+        glBegin(GL_LINES);
+
+        //Horizontal
+        glVertex2d(aux->data.getX() , ym);
+        glVertex2d(aux->data.getX()+aux->data.getWidth() , ym);
+
+        //Vertical
+        glVertex2d(xm,aux->data.getY());
+        glVertex2d(xm,aux->data.getY()+aux->data.getHeight());
+
+
+        glEnd();
+
+        auxQ.pop();
+        for(unsigned int i=0;i<aux->childs.size();i++)
         {
-            if(inside(s,l.getV1(),l.getv2())) //Caso 2
-            {
-                if(pos==0) //vertical
-                {
-                    i=intersectVer(l,s,p);
-                }
-                else //horizontal
-                {
-                    i=intersectHor(l,s,p);
-                }
-                out.push_back(i);
-            } //No hay acciones para el caso 3
+            auxQ.push(aux->childs.at(i));
         }
-        s=p;
 
     }
 
-    return out;
-
 }
-
-Polygon primitives::polygonClipping(Polygon in, Rectangle r)
-{
-    Polygon p;
-    vector<point2D> out,aux;
-
-    line l;
-
-    l.setLine(r.getP1(),r.getP2()); //vertical izquierda
-    out=primitives::SutherlandHodgman(in.getPoints(),l,0);
-
-
-    aux.resize(out.size());
-    aux=out;
-    out.clear();
-
-    l.setLine(r.getP2(),r.getP3()); //horizontal abajo
-    out=primitives::SutherlandHodgman(aux,l,1);
-
-    aux.resize(out.size());
-    aux=out;
-    out.clear();
-
-    l.setLine(r.getP3(),r.getP4()); //vertical derecha
-     out=primitives::SutherlandHodgman(aux,l,0);
-
-     aux.resize(out.size());
-     aux=out;
-     out.clear();
-
-     l.setLine(r.getP4(),r.getP1()); //horizontal arriba
-     out=primitives::SutherlandHodgman(aux,l,1);
-
-     p.setPolygon(out);
-
-     return p;
-
-}
-
-
-
-
 
 
 
